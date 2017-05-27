@@ -1,8 +1,5 @@
 package data;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
 public class ByteAddress {
     //pointer is a number of "row"
     //pointer = 1 == "10" in HEX
@@ -32,8 +29,10 @@ public class ByteAddress {
     public String toString() {
         return String.format("%010X", pointer) + String.format("%01X", shift);
     }
-
-    public StringProperty property() {
-        return new SimpleStringProperty(this.toString());
+    public long toLong() {
+        return this.pointer * 16 + shift;
+    }
+    public int toInt() {
+        return (int) this.toLong();
     }
 }

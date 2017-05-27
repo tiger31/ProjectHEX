@@ -1,13 +1,13 @@
 package sample;
 
-import data.ByteAddress;
-import data.FileModel;
+import data.DataModel;
 import javafx.application.Application;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+
+import java.util.Date;
 
 
 public class Main extends Application {
@@ -17,15 +17,16 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
         BorderPane root = loader.load();
         Controller controller = loader.getController();
-        FileModel model = new FileModel();
-        model.open("part3.rar");
-        controller.linkToModel(model);
+        DataModel d = new DataModel();
+        d.open("ProjectHEX.iml");
+        controller.linkToModel(d);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
+        System.out.println("Start showing" + new Date());
         primaryStage.show();
+        System.out.println("Showed" + new Date());
         controller.bindScrollBars();
         primaryStage.setResizable(false);
-        System.out.print(String.join("\r\n", model.getSplittedStringData()));
     }
 
 

@@ -1,15 +1,14 @@
 package sample;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import data.FileModel;
+import data.ByteAddress;
+import data.DataModel;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 
 public class Controller {
-    private FileModel fileModel;
+    private DataModel dataModel;
     @FXML
     private TextArea binaryAddressTable;
     @FXML
@@ -29,11 +28,16 @@ public class Controller {
 
     }
 
-    public void linkToModel(FileModel model) {
-        this.fileModel = model;
-        binaryAddressTable.setText(String.join("\r\n", fileModel.getStringAddressTable()));
-        hexDump.setText(String.join("\r\n", fileModel.getSplittedHexData()));
-        dataString.setText(String.join("\r\n", fileModel.getSplittedStringData()));
+    public void linkToModel(DataModel dataModel) {
+        this.dataModel = dataModel;
+        int length = (int)dataModel.getFileHexLength() - 1;
+        ByteAddress last = new ByteAddress(length, (int)(dataModel.getFileLenght() - length * 16));
+
+        binaryAddressTable.setText(String.join("\r\n", dataModel.getStringAddressTable(0, length + 1)));
+        hexDump.setText(String.join("\r\n",dataModel.getHEXValueGrouped(new ByteAddress(0), last)));
+        dataString.setText(dataModel.getStringValueGrouped(new ByteAddress(0), last));
+
+
     }
     public void bindScrollBars() {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);
