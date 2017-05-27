@@ -22,9 +22,7 @@ public class Main extends Application {
         controller.linkToModel(d);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
-        System.out.println("Start showing" + new Date());
         primaryStage.show();
-        System.out.println("Showed" + new Date());
         controller.bindScrollBars();
         primaryStage.setResizable(false);
     }

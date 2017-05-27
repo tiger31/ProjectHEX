@@ -29,6 +29,12 @@ public class ByteAddress {
     public String toString() {
         return String.format("%010X", pointer) + String.format("%01X", shift);
     }
+    @Override
+    public boolean equals(Object other) {
+        if (other.getClass() != this.getClass()) return false;
+        ByteAddress address = (ByteAddress) other;
+        return (pointer == address.pointer && shift == address.shift);
+    }
     public long toLong() {
         return this.pointer * 16 + shift;
     }
