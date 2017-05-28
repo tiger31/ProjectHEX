@@ -11,7 +11,7 @@ class DataModel {
     private var isModified: Boolean = false
     private var isFileOpened: Boolean = false
 
-    fun open(file: File) {
+    fun open(file: File): Boolean {
         if (isFileOpened && isModified) {
             //TODO Dialogue like "Do you want to save changes?"
         }
@@ -30,8 +30,8 @@ class DataModel {
             val flooredPointer = Math.floor(byteData.count() / 16.0).toLong()
             this.lastAddress = ByteAddress(flooredPointer, (byteData.count() - flooredPointer * 16).toInt())
             isFileOpened = true
-            System.out.println(this.file.absolutePath)
-        }
+            return true
+        } else return false
     }
 
 

@@ -7,7 +7,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-import java.util.Date;
 
 
 public class Main extends Application {
@@ -17,12 +16,12 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
         BorderPane root = loader.load();
         Controller controller = loader.getController();
-        DataModel d = new DataModel();
-        controller.linkToModel(primaryStage, d);
+        DataModel data = new DataModel();
+        controller.linkToModel(primaryStage, data);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
-        primaryStage.show();
         primaryStage.setResizable(false);
+        primaryStage.show();
     }
 
 
