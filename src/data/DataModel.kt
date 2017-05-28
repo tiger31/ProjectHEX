@@ -1,6 +1,7 @@
 package data
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 class DataModel {
     private lateinit var file: File
@@ -34,6 +35,15 @@ class DataModel {
         } else return false
     }
 
+    fun change(from: ByteAddress, to: ByteAddress, value: ByteArray) {
+        val fromInt = from.toInt()
+        for (i in fromInt..to.toInt()) {
+            byteData.removeAt(fromInt)
+        }
+        byteData.addAll(fromInt, value.toList())
+        isModified = true
+    }
+
 
     private fun createAddressTable() = (0..(fileHexLength))
             .forEachIndexed { i, l -> byteAddress.add(ByteAddress(i.toLong())) }
@@ -51,8 +61,9 @@ class DataModel {
     fun getHEXValueGrouped(from: ByteAddress, to: ByteAddress) : List<String> = getHEXValue(from, to)
             .asSequence().batch(16).map { it.joinToString(separator = " ") }.toList()
     //Returns string formed from bytes of some range
-    fun getStringValue(from: ByteAddress, to: ByteAddress): String = String(getByteValue(from, to).toByteArray())
-            .replace(Regex("""\s"""), ".")
+    fun getStringValue(from: ByteAddress, to: ByteAddress): String = getByteValue(from, to)
+            .map { if (it in 31..126) { it.toChar() } else { '.' }  }
+            .joinToString(separator = "").replace(Regex("""\s"""), ".")
     fun getStringValueGrouped(from: ByteAddress, to: ByteAddress): String = getStringValue(from, to)
             .asSequence().batch(16).map { it.joinToString(separator = "") }.joinToString(separator = "\r\n")
 

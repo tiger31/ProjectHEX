@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="331.0" minWidth="800.0" prefHeight="343.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="331.0" minWidth="700.0" prefHeight="343.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -35,7 +35,7 @@
       </MenuBar>
    </top>
    <center>
-      <BorderPane prefHeight="575.0" prefWidth="427.0" BorderPane.alignment="CENTER">
+      <BorderPane prefHeight="318.0" prefWidth="435.0" BorderPane.alignment="CENTER">
          <top>
             <Label prefHeight="25.0" prefWidth="61.0" text="Hex Dump" BorderPane.alignment="CENTER">
                <font>
@@ -44,7 +44,7 @@
             </Label>
          </top>
          <center>
-            <TextArea fx:id="hexDump" editable="false" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <TextArea fx:id="hexDump" editable="false" prefHeight="293.0" prefWidth="449.0" BorderPane.alignment="CENTER">
                <font>
                   <Font name="DejaVu Sans Mono Bold" size="14.0" />
                </font></TextArea>
@@ -52,7 +52,7 @@
       </BorderPane>
    </center>
    <left>
-      <BorderPane prefHeight="375.0" prefWidth="138.0" BorderPane.alignment="CENTER">
+      <BorderPane prefHeight="318.0" prefWidth="117.0" BorderPane.alignment="CENTER">
          <top>
             <Label prefHeight="25.0" prefWidth="50.0" text="Address" textAlignment="CENTER" BorderPane.alignment="CENTER">
                <font>
@@ -61,7 +61,7 @@
             </Label>
          </top>
          <center>
-            <TextArea fx:id="binaryAddressTable" editable="false" prefHeight="350.0" prefWidth="146.0" style="-fx-fo: #f00;" BorderPane.alignment="CENTER">
+            <TextArea fx:id="binaryAddressTable" editable="false" prefHeight="293.0" prefWidth="113.0" style="-fx-fo: #f00;" BorderPane.alignment="CENTER">
                <font>
                   <Font name="DejaVu Sans Mono Bold" size="14.0" />
                </font></TextArea>
@@ -69,7 +69,7 @@
       </BorderPane>
    </left>
    <right>
-      <BorderPane prefHeight="575.0" prefWidth="212.0" BorderPane.alignment="CENTER">
+      <BorderPane prefHeight="318.0" prefWidth="175.0" BorderPane.alignment="CENTER">
          <top>
             <Label prefHeight="25.0" prefWidth="34.0" text="String" BorderPane.alignment="CENTER">
                <font>
@@ -78,7 +78,7 @@
             </Label>
          </top>
          <center>
-            <TextArea fx:id="dataString" editable="false" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <TextArea fx:id="dataString" editable="false" prefHeight="293.0" prefWidth="169.0" BorderPane.alignment="CENTER">
                <font>
                   <Font name="DejaVu Sans Mono Bold" size="14.0" />
                </font></TextArea>

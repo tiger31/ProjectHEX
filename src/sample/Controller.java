@@ -8,12 +8,11 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.File;
 
@@ -43,10 +42,12 @@ public class Controller {
     public Controller() {
         fileChooser = new FileChooser();
         fileChooser.setTitle("Choose File...");
+
     }
 
     @FXML
     private void initialize() {
+        hexDump.setTextFormatter(new TextFormatter<>(formatter));
         buttonOpen.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -68,6 +69,18 @@ public class Controller {
                         updateForms();
                     }
                 }
+            }
+        });
+        hexDump.selectedTextProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                IndexRange range = hexDump.getSelection();
+                int strBegin = range.getStart() / 48;
+                int strEnd = range.getEnd() / 48;
+                int passedBeforeBegin = (1 + range.getStart() - 48 * strBegin) / 3;
+                int passedBeforeEnd = (2 + range.getEnd() - 48 * strEnd) / 3;
+                System.out.println(strBegin + "/" + strEnd + "|" + passedBeforeBegin + "/" + passedBeforeEnd);
+                dataString.selectRange((strBegin * 17 + passedBeforeBegin), (strEnd * 17 + passedBeforeEnd));
             }
         });
     }
@@ -101,8 +114,24 @@ public class Controller {
     private void updateForms() {
         binaryAddressTable.setText(String.join("\r\n",
                 dataModel.getStringAddressTable(scrollData.getBegin(), scrollData.getEnd())));
-        hexDump.setText(String.join("\r\n",
+        hexDump.setText(String.join("",
                 dataModel.getHEXValueGrouped(scrollData.getBeginAddr(), scrollData.getEndAddr())));
         dataString.setText(dataModel.getStringValueGrouped(scrollData.getBeginAddr(), scrollData.getEndAddr()));
     }
+
+    StringConverter<String> formatter = new StringConverter<String>()
+    {
+        @Override
+        public String fromString(String string)
+        {
+            return string.replaceAll("\\s", "");
+        }
+        @Override
+        public String toString(String object)
+        {
+            if (object == null) return "";
+            String str = object.replaceAll("[A-F0-9]{32}", "$0\r\n");
+            return str.replaceAll("[A-F0-9]{2}(?=[A-F0-9])", "$0 ");
+        }
+    };
 }
