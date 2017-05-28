@@ -37,10 +37,7 @@ public class Controller {
         int length = (int)dataModel.getFileHexLength();
         ByteAddress last = dataModel.getLastAddress();
         scrollData = new ScrollData(length, last);
-        scroll.setVisibleAmount(16.0 / length);
-        binaryAddressTable.setText(String.join("\r\n", dataModel.getStringAddressTable(0, length)));
-        hexDump.setText(String.join("\r\n",dataModel.getHEXValueGrouped(new ByteAddress(0), last)));
-        dataString.setText(dataModel.getStringValueGrouped(new ByteAddress(0), last));
+        updateForms();
 
 
     }
@@ -48,28 +45,31 @@ public class Controller {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);
         ScrollPane second = (ScrollPane) hexDump.getChildrenUnmodifiable().get(0);
         ScrollPane third = (ScrollPane) dataString.getChildrenUnmodifiable().get(0);
-        scroll.setMin(first.getVmin());
-        scroll.setMax(first.getVmax());
-        scroll.valueProperty().bindBidirectional(first.vvalueProperty());
-        scroll.valueProperty().bindBidirectional(second.vvalueProperty());
-        scroll.valueProperty().bindBidirectional(third.vvalueProperty());
+        first.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        second.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        third.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setMin(0);
+        scroll.setMax(scrollData.getValue());
+
         scroll.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue <? extends Number> ov, Number old_val, Number new_val) {
+                int min = scrollData.getBegin();
+                int max = scrollData.getEnd();
                 int current = scrollData.getCurrent();
-                scrollData.collect((new_val.doubleValue() - old_val.doubleValue()) * scrollData.getValue());
+                scrollData.collect((new_val.doubleValue() - old_val.doubleValue()));
                 if (current != scrollData.getCurrent()) {
-                    printScroller();
+                    if (min != scrollData.getBegin() || max != scrollData.getEnd()) {
+                        updateForms();
+                    }
                 }
             }
         });
     }
-    //DEBUG
-    private void printScroller() {
-        System.out.print("ScrollValue = " + scrollData.getValue());
-        System.out.print(" Length = " + scrollData.getLength());
-        System.out.print(" Begin = " + scrollData.getBegin());
-        System.out.print(" End = " + scrollData.getEnd());
-        System.out.print(" Current = " + scrollData.getCurrent());
-        System.out.println(" Last = " + scrollData.getLast().toString() + "/" + scrollData.getLast().toInt());
+    private void updateForms() {
+        binaryAddressTable.setText(String.join("\r\n",
+                dataModel.getStringAddressTable(scrollData.getBegin(), scrollData.getEnd())));
+        hexDump.setText(String.join("\r\n",
+                dataModel.getHEXValueGrouped(scrollData.getBeginAddr(), scrollData.getEndAddr())));
+        dataString.setText(dataModel.getStringValueGrouped(scrollData.getBeginAddr(), scrollData.getEndAddr()));
     }
 }

@@ -18,7 +18,7 @@ public class Main extends Application {
         BorderPane root = loader.load();
         Controller controller = loader.getController();
         DataModel d = new DataModel();
-        d.open("ProjectHEX.iml");
+        d.open("5.pdf");
         controller.linkToModel(d);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));

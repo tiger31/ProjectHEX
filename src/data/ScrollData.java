@@ -19,7 +19,7 @@ public class ScrollData {
         this.length = length;
         this.last = last;
         this.begin = 0;
-        this.end = (length > 32) ? 32 : length;
+        this.end = (length > 16) ? 16 : length;
         this.current = 0;
         //Amount of changes causes rewriting
         this.scrollValue = ((length - 16) < 0) ? 0 : length - 16;
@@ -35,20 +35,15 @@ public class ScrollData {
 
     private void recount(int current) {
         if (current == this.current) return;
-        if (current > length || current < 0)
-            throw new IllegalStateException("Current string can be more then it's amount or below 0: " + current);
+        if (current > length || current < 0) return;
         int change = current - this.current;
-        if (scrollValue > 16) {
+        if (scrollValue > 0) {
             if (change > 0) {
-                if ((current - begin) > 8) {
-                    end = ((end + change) > length) ? length : end + change;
-                    begin = end - 32;
-                }
+                end = ((end + change) > length) ? length : end + change;
+                begin = end - 16;
             } else {
-                if ((end - current) > 8) {
-                    begin = ((begin + change) < 0) ? 0 : begin + change;
-                    end = begin + 32;
-                }
+                begin = ((begin + change) < 0) ? 0 : begin + change;
+                end = begin + 16;
             }
         }
         this.current = current;
@@ -71,6 +66,13 @@ public class ScrollData {
     }
     public int getValue() {
         return scrollValue;
+    }
+
+    public ByteAddress getBeginAddr() {
+        return new ByteAddress(begin);
+    }
+    public ByteAddress getEndAddr() {
+        return (end == length) ? last : new ByteAddress(end);
     }
 
     @Override
