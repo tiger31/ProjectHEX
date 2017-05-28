@@ -18,12 +18,10 @@ public class Main extends Application {
         BorderPane root = loader.load();
         Controller controller = loader.getController();
         DataModel d = new DataModel();
-        d.open("5.pdf");
-        controller.linkToModel(d);
+        controller.linkToModel(primaryStage, d);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
-        controller.bindScrollBars();
         primaryStage.setResizable(false);
     }
 

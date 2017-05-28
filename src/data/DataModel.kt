@@ -8,13 +8,19 @@ class DataModel {
     private lateinit var lastAddress: ByteAddress
     private val byteAddress: MutableList<ByteAddress> = mutableListOf()
     private val byteData: MutableList<Byte> = mutableListOf()
+    private var isModified: Boolean = false
+    private var isFileOpened: Boolean = false
 
-    fun open(filename: String) {
-        val file = File(filename)
+    fun open(file: File) {
+        if (isFileOpened && isModified) {
+            //TODO Dialogue like "Do you want to save changes?"
+        }
+
         if (file.exists() && file.canRead() && file.canWrite()) {
             //Saving link to file
             this.file = file
             //Collect all bytes
+            byteData.clear()
             this.byteData.addAll(file.readBytes().toList())
             //Recount size of file in strings by 16 byte each
             this.fileHexLength = Math.ceil(byteData.count() / 16.0).toLong()
@@ -23,6 +29,8 @@ class DataModel {
             //Counting the last byte address in file
             val flooredPointer = Math.floor(byteData.count() / 16.0).toLong()
             this.lastAddress = ByteAddress(flooredPointer, (byteData.count() - flooredPointer * 16).toInt())
+            isFileOpened = true
+            System.out.println(this.file.absolutePath)
         }
     }
 

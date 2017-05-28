@@ -5,12 +5,20 @@ import data.DataModel;
 import data.ScrollData;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
 
 public class Controller {
+    private Stage main;
     private DataModel dataModel;
     private ScrollData scrollData;
     @FXML
@@ -21,25 +29,41 @@ public class Controller {
     private TextArea dataString;
     @FXML
     private ScrollBar scroll;
+    @FXML
+    private MenuItem buttonOpen;
+    private final FileChooser fileChooser;
 
 
     public Controller() {
-
+        fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose File...");
     }
 
     @FXML
     private void initialize() {
+        buttonOpen.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                File file = fileChooser.showOpenDialog(main);
+                if (file != null) {
+                    fileOpen(file);
+                }
+            }
+        });
 
     }
 
-    public void linkToModel(DataModel dataModel) {
+    public void linkToModel(Stage main,DataModel dataModel) {
+        this.main = main;
         this.dataModel = dataModel;
+    }
+    private void fileOpen(File file) {
+        dataModel.open(file);
         int length = (int)dataModel.getFileHexLength();
         ByteAddress last = dataModel.getLastAddress();
         scrollData = new ScrollData(length, last);
         updateForms();
-
-
+        bindScrollBars();
     }
     public void bindScrollBars() {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);
@@ -50,7 +74,6 @@ public class Controller {
         third.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setMin(0);
         scroll.setMax(scrollData.getValue());
-
         scroll.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue <? extends Number> ov, Number old_val, Number new_val) {
                 int min = scrollData.getBegin();
@@ -65,6 +88,7 @@ public class Controller {
             }
         });
     }
+
     private void updateForms() {
         binaryAddressTable.setText(String.join("\r\n",
                 dataModel.getStringAddressTable(scrollData.getBegin(), scrollData.getEnd())));
