@@ -1,38 +1,28 @@
 package data
 
 import java.io.File
-import java.nio.charset.StandardCharsets
 
 class DataModel {
     private lateinit var file: File
     private var fileHexLength: Long = 0
     private lateinit var lastAddress: ByteAddress
-    private val byteAddress: MutableList<ByteAddress> = mutableListOf()
     private val byteData: MutableList<Byte> = mutableListOf()
     private var isModified: Boolean = false
     private var isFileOpened: Boolean = false
 
-    fun open(file: File): Boolean {
-        if (isFileOpened && isModified) {
-            //TODO Dialogue like "Do you want to save changes?"
-        }
 
-        if (file.exists() && file.canRead() && file.canWrite()) {
-            //Saving link to file
-            this.file = file
-            //Collect all bytes
-            byteData.clear()
-            this.byteData.addAll(file.readBytes().toList())
-            //Recount size of file in strings by 16 byte each
-            this.fileHexLength = Math.ceil(byteData.count() / 16.0).toLong()
-            //Forming the addresses table
-            this.createAddressTable()
-            //Counting the last byte address in file
-            val flooredPointer = Math.floor(byteData.count() / 16.0).toLong()
-            this.lastAddress = ByteAddress(flooredPointer, (byteData.count() - flooredPointer * 16).toInt())
-            isFileOpened = true
-            return true
-        } else return false
+    fun setData(file: File, byteArray: ByteArray) {
+        //Saving link to file
+        this.file = file
+        //Collect all bytes
+        byteData.clear()
+        this.byteData.addAll(byteArray.toList())
+        //Recount size of file in strings by 16 byte each
+        this.fileHexLength = Math.ceil(byteData.count() / 16.0).toLong()
+        //Counting the last byte address in file
+        val flooredPointer = Math.floor(byteData.count() / 16.0).toLong()
+        this.lastAddress = ByteAddress(flooredPointer, (byteData.count() - flooredPointer * 16).toInt())
+        isFileOpened = true
     }
 
     fun change(from: ByteAddress, to: ByteAddress, value: ByteArray) {
@@ -44,14 +34,8 @@ class DataModel {
         isModified = true
     }
 
-
-    private fun createAddressTable() = (0..(fileHexLength))
-            .forEachIndexed { i, l -> byteAddress.add(ByteAddress(i.toLong())) }
-
-    //Returns whole address table
-    fun getAddressTable(): List<ByteAddress> = byteAddress
     //Returns addresses of some range
-    fun getAddressTable(from: Int, to: Int): List<ByteAddress> = byteAddress.subList(from, to)
+    fun getAddressTable(from: Int, to: Int): List<ByteAddress> = ByteAddress.getTable(from.toLong(), to.toLong())
     fun getStringAddressTable(from: Int, to: Int): List<String> = getAddressTable(from, to).map { it.toString() }
     //Returns list of byte values of some range
     fun getByteValue(from: ByteAddress, to: ByteAddress): List<Byte> = byteData.subList(from.toInt(), to.toInt())
