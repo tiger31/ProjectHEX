@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.ScrollEvent;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
@@ -65,7 +66,7 @@ public class Controller {
                 main.editData(hexDump.getText(forHex.getStart(), forHex.getEnd()),
                         dataString.getText(forStr.getStart(), forStr.getEnd()), begin, end);
                 if (dataModel.isModified()) {
-                    updateScrollData();
+                    scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
                     updateForms();
                 }
             }
@@ -130,6 +131,28 @@ public class Controller {
     public void linkToModel(Main main,DataModel dataModel) {
         this.main = main;
         this.dataModel = dataModel;
+
+        main.primary.getScene().heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                double height = hexDump.getHeight();
+                int lines = (int)(height + 5) / 19;
+                if (scrollData != null && lines != scrollData.getLines()) {
+                    scrollData.setLinesAmount(lines);
+                    scroll.setMax(scrollData.getValue());
+                    scroll.setVisible(scrollData.getValue() > 0);
+                    scroll.setVisibleAmount(scrollData.getVisibleAmount());
+                    scroll.setValue(scrollData.getBegin());
+                    updateForms();
+                }
+            }
+        });
+        main.primary.getScene().setOnScroll(new EventHandler<ScrollEvent>() {
+            @Override
+            public void handle(ScrollEvent event) {
+                if (!scroll.isFocused()) scroll.requestFocus();
+            }
+        });
     }
     private void fileOpen(File file) {
         main.primary.setTitle("ProjectHEX - " + file.getAbsolutePath());
@@ -149,13 +172,6 @@ public class Controller {
         };
         new Thread(task).start();
     }
-    private void updateScrollData() {
-        int length = (int) dataModel.getFileHexLength();
-        ByteAddress last = dataModel.getLastAddress();
-        scrollData = new ScrollData(length, last);
-        scroll.setVisible(scrollData.getValue() > 0);
-        bindScrollBars();
-    }
     private void bindScrollBars() {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);
         ScrollPane second = (ScrollPane) hexDump.getChildrenUnmodifiable().get(0);
@@ -165,6 +181,14 @@ public class Controller {
         third.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setMin(0);
         scroll.setMax(scrollData.getValue());
+        scroll.setVisibleAmount(scrollData.getVisibleAmount());
+    }
+    private void updateScrollData() {
+        int length = (int) dataModel.getFileHexLength();
+        ByteAddress last = dataModel.getLastAddress();
+        scrollData = new ScrollData(length, last, ((int)hexDump.getHeight() + 5) / 19);
+        scroll.setVisible(scrollData.getValue() > 0);
+        bindScrollBars();
     }
     private void updateForms() {
         binaryAddressTable.setText(String.join("\r\n",
@@ -187,7 +211,7 @@ public class Controller {
     private void lockSelection() {
         biSelectionLock = true;
     }
-    private void  unlockSelection() {
+    private void unlockSelection() {
         biSelectionLock = false;
     }
     private boolean isSelectionLocked() {

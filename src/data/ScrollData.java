@@ -12,41 +12,59 @@ public class ScrollData {
     private int current;
     private int length;
     private int scrollValue;
+    private int lines;
     private ByteAddress last;
     private double delta;
 
-    public ScrollData(int length, ByteAddress last) {
+    public ScrollData(int length, ByteAddress last, int lines) {
         this.length = length;
         this.last = last;
+        this.lines = lines;
         this.begin = 0;
-        this.end = (length > 16) ? 16 : length;
+        this.end = (length > lines) ? lines : length;
         this.current = 0;
         //Amount of changes causes rewriting
-        this.scrollValue = ((length - 16) < 0) ? 0 : length - 16;
+        this.scrollValue = ((length - lines) < 0) ? 0 : length - lines;
         delta = 0;
 
+
+    }
+
+    public void onChange(int length, ByteAddress last) {
+        this.length = length;
+        this.last = last;
+        this.end = (end > length) ? length : end;
+        recount(0, true);
     }
 
     public void collect(double change) {
         delta += change;
-        recount((int)Math.floor(delta));
+        recount((int)Math.floor(delta), false);
     }
 
+    public void setLinesAmount(int lines) {
+        this.lines = lines;
+        this.scrollValue = ((length - lines) < 0) ? 0 : length - lines;
+        recount(current, true);
+    }
 
-    private void recount(int current) {
-        if (current == this.current) return;
+    private void recount(int current, boolean force) {
+        if (current == this.current && !force) return;
         if (current > length || current < 0) return;
         int change = current - this.current;
-        if (scrollValue > 0) {
+        if (scrollValue >= 0) {
             if (change > 0) {
-                end = ((end + change) > length) ? length : end + change;
-                begin = end - 16;
+                end = ((end + change) >= length) ? length : end + change;
+                begin = end - lines;
             } else {
-                begin = ((begin + change) < 0) ? 0 : begin + change;
-                end = begin + 16;
+                if (end == length)
+                    begin = ((end - lines + change) <= 0) ? 0 : end - lines + change;
+                else
+                    begin = ((begin + change) <= 0) ? 0 : begin + change;
+                end = ((begin + lines) > length) ? length : begin + lines;
             }
         }
-        this.current = current;
+        this.current = begin;
     }
 
     public ByteAddress getLast() {
@@ -66,6 +84,12 @@ public class ScrollData {
     }
     public int getValue() {
         return scrollValue;
+    }
+    public int getLines() {
+        return lines;
+    }
+    public double getVisibleAmount() {
+        return (double) scrollValue * ((double) lines / length);
     }
 
     public ByteAddress getBeginAddr() {

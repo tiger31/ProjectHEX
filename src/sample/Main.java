@@ -23,10 +23,10 @@ public class Main extends Application {
         DataModel data = new DataModel();
         primary = primaryStage;
         this.data = data;
-        controller.linkToModel(this, data);
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
-        primaryStage.setResizable(false);
+        //primaryStage.setResizable(false);
+        controller.linkToModel(this, data);
         primaryStage.show();
     }
 
