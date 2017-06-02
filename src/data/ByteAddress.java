@@ -1,5 +1,8 @@
 package data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ByteAddress {
     //pointer is a number of "row"
     //pointer = 1 == "10" in HEX
@@ -35,6 +38,15 @@ public class ByteAddress {
         ByteAddress address = (ByteAddress) other;
         return (pointer == address.pointer && shift == address.shift);
     }
+
+    public static List<ByteAddress> getTable(long from, long to) {
+        List<ByteAddress> list = new ArrayList<>();
+        for (long i = from; i < to; i++) {
+            list.add(new ByteAddress(i));
+        }
+        return list;
+    }
+
     public long toLong() {
         return this.pointer * 16 + shift;
     }
