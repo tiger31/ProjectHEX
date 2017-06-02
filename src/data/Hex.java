@@ -18,4 +18,15 @@ public class Hex {
         if (length % 2 == 1) hex = hex.substring(0, length - 1) + "0" + hex.charAt(length - 1);
         return hex;
     }
+
+    public static String hexToString(byte[] bytes) {
+        StringBuilder string = new StringBuilder();
+        for (byte b: bytes) {
+            string.append((b > 29 && b < 127) ? new String(new byte[] { b }) : ".");
+        }
+        return string.toString();
+    }
+    public static String hexStringToString(String hexSequence) {
+        return hexToString(hexStringToByteArray(normalizeHexString(hexSequence)));
+    }
 }

@@ -60,7 +60,7 @@ class DataModel {
             .asSequence().batch(16).map { it.joinToString(separator = " ") }.toList()
     //Returns string formed from bytes of some range
     fun getStringValue(from: ByteAddress, to: ByteAddress): String = getByteValue(from, to)
-            .map { if (it in 31..126) { it.toChar() } else { '.' }  }
+            .map { if (it in 30..126) { it.toChar() } else { '.' }  }
             .joinToString(separator = "").replace(Regex("""\s"""), ".")
     fun getStringValueGrouped(from: ByteAddress, to: ByteAddress): String = getStringValue(from, to)
             .asSequence().batch(16).map { it.joinToString(separator = "") }.joinToString(separator = "\r\n")

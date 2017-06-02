@@ -64,6 +64,7 @@ public class EditDialog {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (newValue.matches("[0-9a-fA-F ]*")) {
                     hex.setText(newValue);
+                    string.setText(Hex.hexStringToString(newValue));
                 } else {
                     hex.setText(oldValue);
                 }

@@ -4,6 +4,7 @@ import data.ByteAddress;
 import data.DataModel;
 import data.ScrollData;
 import data.Selection;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -155,22 +156,18 @@ public class Controller {
         });
     }
     private void fileOpen(File file) {
-        main.primary.setTitle("ProjectHEX - " + file.getAbsolutePath());
-        //Loading file in thread to prevent freezes
-        fileLoadIndicator.setVisible(true);
-        Task<Void> task = new Task<Void>() {
+        Platform.runLater(new Runnable() {
             @Override
-            protected Void call() throws InterruptedException {
+            public void run() {
                 if (dataModel.open(file)) {
+                    updateWindowTitle();
                     updateScrollData();
                     updateForms();
                     enableContextMenu();
                 }
                 hideProgressIndicator();
-                return null;
             }
-        };
-        new Thread(task).start();
+        });
     }
     private void bindScrollBars() {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);
