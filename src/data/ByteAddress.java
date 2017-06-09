@@ -15,7 +15,7 @@ public class ByteAddress {
         this.shift = 0;
     }
     public ByteAddress(long pointer, int shift) {
-        if (shift < 0 || shift > 15) throw new IllegalArgumentException("Shift must be in range from 0 to 15");
+        if (shift < 0 || shift > 15) throw new IllegalArgumentException("Shift must be in range from 0 to 15: " + shift);
         this.pointer = pointer;
         this.shift = shift;
     }

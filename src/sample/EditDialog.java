@@ -29,14 +29,16 @@ public class EditDialog {
     private DataModel model;
     private ByteAddress begin;
     private ByteAddress end;
+    private Edit type;
 
     public EditDialog() {}
 
-    public void linkToMain(Stage stage, DataModel model, ByteAddress begin, ByteAddress end) {
+    public void linkToMain(Stage stage, DataModel model, ByteAddress begin, ByteAddress end, Edit type) {
         this.stage = stage;
         this.model = model;
         this.begin = begin;
         this.end = end;
+        this.type = type;
     }
     public void showData(String hex, String string) {
         this.hex.setText(hex.replaceAll("\n", " "));
@@ -45,29 +47,22 @@ public class EditDialog {
 
     @FXML
     private void initialize() {
-        cancel.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                stage.close();
-            }
+        cancel.setOnAction((ActionEvent event) -> {
+            stage.close();
         });
-        save.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println(begin.toInt() + " " + end.toInt());
+        save.setOnAction((ActionEvent event) -> {
+            if (type == Edit.CHANGE)
                 model.change(begin, end, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
-                stage.close();
-            }
+            else
+                model.insert(begin, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
+            stage.close();
         });
-        hex.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (newValue.matches("[0-9a-fA-F ]*")) {
-                    hex.setText(newValue);
-                    string.setText(Hex.hexStringToString(newValue));
-                } else {
-                    hex.setText(oldValue);
-                }
+        hex.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            if (newValue.matches("[0-9a-fA-F ]*")) {
+                hex.setText(newValue);
+                string.setText(Hex.hexStringToString(newValue));
+            } else {
+                hex.setText(oldValue);
             }
         });
     }

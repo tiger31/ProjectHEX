@@ -1,5 +1,6 @@
 package sample;
 
+import com.sun.javafx.scene.control.skin.TextAreaSkin;
 import data.ByteAddress;
 import data.DataModel;
 import data.ScrollData;
@@ -7,11 +8,11 @@ import data.Selection;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
@@ -44,7 +45,7 @@ public class Controller {
     private final FileChooser fileChooser;
 
     private boolean biSelectionLock;
-    ContextMenu textfieldContextMenu = new ContextMenu();
+    private ContextMenu textfieldContextMenu = new ContextMenu();
 
 
     public Controller() {
@@ -53,79 +54,97 @@ public class Controller {
         biSelectionLock = false;
 
         MenuItem edit = new MenuItem("Edit");
-        edit.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                IndexRange selection = hexDump.getSelection();
-                if(selection.getStart() >= selection.getEnd()) return;
-                Selection range = new Selection(selection, true);
-                IndexRange forHex = range.getRangeForHex();
-                IndexRange forStr = range.getRangeForString();
-                //Calc byteAddress of first selected Byte
-                ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
-                ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
-                main.editData(hexDump.getText(forHex.getStart(), forHex.getEnd()),
-                        dataString.getText(forStr.getStart(), forStr.getEnd()), begin, end);
-                if (dataModel.isModified()) {
-                    scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
-                    updateForms();
-                }
+        MenuItem remove = new MenuItem("Remove");
+        MenuItem insert = new MenuItem("Insert");
+        edit.setOnAction((ActionEvent event) -> {
+            IndexRange selection = hexDump.getSelection();
+            if(selection.getStart() >= selection.getEnd()) return;
+            Selection range = new Selection(selection, true);
+            IndexRange forHex = range.getRangeForHex();
+            IndexRange forStr = range.getRangeForString();
+            //Calc byteAddress of first selected Byte
+            ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
+            ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
+            main.editData(hexDump.getText(forHex.getStart(), forHex.getEnd()),
+                    dataString.getText(forStr.getStart(), forStr.getEnd()), begin, end, Edit.CHANGE);
+            if (dataModel.isModified()) {
+                scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
+                updateForms();
+            }
+        });
+        remove.setOnAction((ActionEvent event) -> {
+            IndexRange selection = hexDump.getSelection();
+            if(selection.getStart() >= selection.getEnd()) return;
+            Selection range = new Selection(selection, true);
+            ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
+            ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
+            dataModel.remove(begin, end);
+            if (dataModel.isModified()) {
+                scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
+                updateForms();
+            }
+        });
+        insert.setOnAction((ActionEvent event) -> {
+            IndexRange selection = hexDump.getSelection();
+            if(selection.getStart() != selection.getEnd()) return;
+            Selection range = new Selection(selection, true);
+            System.out.println(hexDump.getSelection());
+            ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
+            ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
+            System.out.println(hexDump.getCaretPosition());
+            main.editData("", "", begin, end, Edit.INSERT);
+            if (dataModel.isModified()) {
+                scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
+                updateForms();
             }
         });
         edit.setDisable(true);
-        textfieldContextMenu.getItems().add(edit);
+        remove.setDisable(true);
+        insert.setDisable(true);
+        textfieldContextMenu.getItems().addAll(edit, remove, insert);
     }
 
     @FXML
     private void initialize() {
         hexDump.setTextFormatter(new TextFormatter<>(formatter));
         hexDump.setContextMenu(textfieldContextMenu);
-        buttonOpen.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                File file = fileChooser.showOpenDialog(main.primary);
-                if (file != null) {
-                    fileOpen(file);
-                }
+        buttonOpen.setOnAction((ActionEvent event) -> {
+            File file = fileChooser.showOpenDialog(main.primary);
+            if (file != null) {
+                fileOpen(file);
             }
         });
-        buttonSave.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-               dataModel.save();
-               updateWindowTitle();
-            }
+        buttonSave.setOnAction((ActionEvent event) -> {
+            dataModel.save();
+            updateWindowTitle();
         });
         scroll.setVisible(false);
-        scroll.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue <? extends Number> ov, Number old_val, Number new_val) {
-                int min = scrollData.getBegin();
-                int max = scrollData.getEnd();
-                int current = scrollData.getCurrent();
-                scrollData.collect((new_val.doubleValue() - old_val.doubleValue()));
-                if (current != scrollData.getCurrent()) {
-                    if (min != scrollData.getBegin() || max != scrollData.getEnd()) {
-                        updateForms();
-                    }
+        scroll.valueProperty().addListener((ObservableValue <? extends Number> ov, Number old_val, Number new_val) -> {
+            int min = scrollData.getBegin();
+            int max = scrollData.getEnd();
+            int current = scrollData.getCurrent();
+            scrollData.collect((new_val.doubleValue() - old_val.doubleValue()));
+            if (current != scrollData.getCurrent()) {
+                if (min != scrollData.getBegin() || max != scrollData.getEnd()) {
+                    updateForms();
                 }
             }
         });
-        hexDump.selectedTextProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                IndexRange selection = new Selection(hexDump.getSelection(), true).getRangeForString();
-                lockSelection();
-                dataString.selectRange(selection.getStart(), selection.getEnd());
-                unlockSelection();
-            }
+        hexDump.selectedTextProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            IndexRange selection = new Selection(hexDump.getSelection(), true).getRangeForString();
+            lockSelection();
+            dataString.selectRange(selection.getStart(), selection.getEnd());
+            unlockSelection();
         });
-        dataString.selectedTextProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                IndexRange selection = new Selection(dataString.getSelection(), false).getRangeForHex();
-                if (!isSelectionLocked())
-                    hexDump.selectRange(selection.getStart(), selection.getEnd());
-            }
+        dataString.selectedTextProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            IndexRange selection = new Selection(dataString.getSelection(), false).getRangeForHex();
+            if (!isSelectionLocked())
+                hexDump.selectRange(selection.getStart(), selection.getEnd());
+        });
+        hexDump.setOnMouseClicked((MouseEvent event) -> {
+            TextAreaSkin skin = (TextAreaSkin) hexDump.getSkin();
+            int insertionPoint = skin.getInsertionPoint(event.getX(),  event.getY());
+            hexDump.positionCaret( insertionPoint);
         });
     }
 
@@ -133,40 +152,31 @@ public class Controller {
         this.main = main;
         this.dataModel = dataModel;
 
-        main.primary.getScene().heightProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                double height = hexDump.getHeight();
-                int lines = (int)(height + 5) / 19;
-                if (scrollData != null && lines != scrollData.getLines()) {
-                    scrollData.setLinesAmount(lines);
-                    scroll.setMax(scrollData.getValue());
-                    scroll.setVisible(scrollData.getValue() > 0);
-                    scroll.setVisibleAmount(scrollData.getVisibleAmount());
-                    scroll.setValue(scrollData.getBegin());
-                    updateForms();
-                }
+        main.primary.getScene().heightProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+            double height = hexDump.getHeight();
+            int lines = (int)(height + 5) / 19;
+            if (scrollData != null && lines != scrollData.getLines()) {
+                scrollData.setLinesAmount(lines);
+                scroll.setMax(scrollData.getValue());
+                scroll.setVisible(scrollData.getValue() > 0);
+                scroll.setVisibleAmount(scrollData.getVisibleAmount());
+                scroll.setValue(scrollData.getBegin());
+                updateForms();
             }
         });
-        main.primary.getScene().setOnScroll(new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent event) {
-                if (!scroll.isFocused()) scroll.requestFocus();
-            }
+        main.primary.getScene().setOnScroll((ScrollEvent event) -> {
+            if (!scroll.isFocused()) scroll.requestFocus();
         });
     }
     private void fileOpen(File file) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                if (dataModel.open(file)) {
-                    updateWindowTitle();
-                    updateScrollData();
-                    updateForms();
-                    enableContextMenu();
-                }
-                hideProgressIndicator();
+        Platform.runLater(() -> {
+            if (dataModel.open(file)) {
+                updateWindowTitle();
+                updateScrollData();
+                updateForms();
+                enableContextMenu();
             }
+            hideProgressIndicator();
         });
     }
     private void bindScrollBars() {
@@ -200,7 +210,7 @@ public class Controller {
         main.primary.setTitle("ProjectHEX - " + ((dataModel.isModified()) ? dataModel.getFilePath() + "*" : dataModel.getFilePath()));
     }
     private void enableContextMenu() {
-        textfieldContextMenu.getItems().get(0).setDisable(false);
+        textfieldContextMenu.getItems().forEach(N -> N.setDisable(false));
     }
     private void hideProgressIndicator() {
         fileLoadIndicator.setVisible(false);

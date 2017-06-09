@@ -1,0 +1,17 @@
+.menu {
+    -fx-background-color: #ddd;
+}
+.textHex, .textAddress, .textString {
+    -fx-text-box-border: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+.textHex {
+    -fx-control-inner-background: #ddffdd;
+}
+.textAddress {
+    -fx-control-inner-background: #ffdddd;
+}
+.textString {
+    -fx-control-inner-background: #ddddff;
+}

@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 
@@ -25,24 +26,24 @@ public class Main extends Application {
         this.data = data;
         primaryStage.setTitle("ProjectHEX");
         primaryStage.setScene(new Scene(root));
-        //primaryStage.setResizable(false);
         controller.linkToModel(this, data);
         primaryStage.show();
     }
 
-    public boolean editData(String hex, String string, ByteAddress begin, ByteAddress end) {
+    public boolean editData(String hex, String string, ByteAddress begin, ByteAddress end, Edit type) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editDialog.fxml"));
             BorderPane page = loader.load();
             EditDialog controller = loader.getController();
             Stage dialog = new Stage();
-            dialog.setTitle("Edit");
+            dialog.setTitle("Edit...");
             dialog.initModality(Modality.WINDOW_MODAL);
             dialog.initOwner(primary);
             Scene scene = new Scene(page);
-            controller.linkToMain(dialog, data, begin, end);
+            controller.linkToMain(dialog, data, begin, end, type);
             controller.showData(hex, string);
             dialog.setScene(scene);
+            dialog.setResizable(false);
             dialog.showAndWait();
             return true;
         } catch (IOException e) {

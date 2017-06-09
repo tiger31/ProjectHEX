@@ -33,6 +33,20 @@ class DataModel {
         isModified = true
     }
 
+    fun remove(from: ByteAddress, to: ByteAddress) {
+        val fromInt = from.toInt()
+        for(i in fromInt..to.toInt())
+            byteData.removeAt(fromInt)
+        recount()
+        isModified = true
+    }
+
+    fun insert(to: ByteAddress, value: ByteArray) {
+        byteData.addAll(to.toInt(), value.toList())
+        recount()
+        isModified = true
+    }
+
     fun save() {
         if (isFileOpened && isModified) {
             file.writeBytes(byteData.toByteArray())
