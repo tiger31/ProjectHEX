@@ -47,6 +47,21 @@ public class ByteAddress {
         return list;
     }
 
+    public ByteAddress plus(int number) {
+        if (number < 0) throw new IllegalArgumentException("number should be below 0: " + number);
+        return new ByteAddress(pointer + ((shift + number) / 16), (shift + number) % 16);
+    }
+    public ByteAddress minus(int number) {
+        if (number < 0) throw new IllegalArgumentException("number should be below 0: " + number);
+        if (number <= shift)
+            return new ByteAddress(pointer, shift - number);
+        else {
+            int val = (int)pointer * 16 + shift - number;
+            return new ByteAddress(val / 16, val % 16);
+        }
+    }
+
+
     public long toLong() {
         return this.pointer * 16 + shift;
     }

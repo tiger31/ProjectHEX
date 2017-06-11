@@ -2,18 +2,14 @@ package sample;
 
 import data.ByteAddress;
 import data.DataModel;
+import data.Edit;
 import data.Hex;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
-import java.util.Arrays;
 
 public class EditDialog {
     @FXML
@@ -52,9 +48,9 @@ public class EditDialog {
         });
         save.setOnAction((ActionEvent event) -> {
             if (type == Edit.CHANGE)
-                model.change(begin, end, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
+                model.changeData(begin, end, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
             else
-                model.insert(begin, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
+                model.insertData(begin, Hex.hexStringToByteArray(Hex.normalizeHexString(hex.getText())));
             stage.close();
         });
         hex.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {

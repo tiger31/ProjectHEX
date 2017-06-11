@@ -1,15 +1,10 @@
 package sample;
 
 import com.sun.javafx.scene.control.skin.TextAreaSkin;
-import data.ByteAddress;
-import data.DataModel;
-import data.ScrollData;
-import data.Selection;
+import data.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
@@ -39,6 +34,10 @@ public class Controller {
     private MenuItem buttonSave;
     @FXML
     private MenuItem buttonSaveAs;
+    @FXML
+    private MenuItem buttonUndo;
+    @FXML
+    private MenuItem buttonRedo;
     @FXML
     private ProgressIndicator fileLoadIndicator;
 
@@ -78,7 +77,7 @@ public class Controller {
             Selection range = new Selection(selection, true);
             ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
             ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
-            dataModel.remove(begin, end);
+            dataModel.removeData(begin, end);
             if (dataModel.isModified()) {
                 scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
                 updateForms();
@@ -90,7 +89,7 @@ public class Controller {
             Selection range = new Selection(selection, true);
             System.out.println(hexDump.getSelection());
             ByteAddress begin = new ByteAddress(scrollData.getBegin() + range.getStrBegin(), range.getIndexBegin());
-            ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd() - 1);
+            ByteAddress end = new ByteAddress(scrollData.getBegin() + range.getStrEnd(), range.getIndexEnd());
             System.out.println(hexDump.getCaretPosition());
             main.editData("", "", begin, end, Edit.INSERT);
             if (dataModel.isModified()) {
@@ -142,9 +141,26 @@ public class Controller {
                 hexDump.selectRange(selection.getStart(), selection.getEnd());
         });
         hexDump.setOnMouseClicked((MouseEvent event) -> {
-            TextAreaSkin skin = (TextAreaSkin) hexDump.getSkin();
-            int insertionPoint = skin.getInsertionPoint(event.getX(),  event.getY());
-            hexDump.positionCaret( insertionPoint);
+            if (event.isPopupTrigger() && hexDump.getSelection().getLength() == 0) {
+                TextAreaSkin skin = (TextAreaSkin) hexDump.getSkin();
+                int insertionPoint = skin.getInsertionPoint(event.getX(), event.getY());
+                hexDump.positionCaret(insertionPoint);
+            }
+
+        });
+        buttonUndo.setOnAction((ActionEvent event) -> {
+            dataModel.undo();
+            if (dataModel.isModified()) {
+                scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
+                updateForms();
+            }
+        });
+        buttonRedo.setOnAction((ActionEvent event) -> {
+            dataModel.redo();
+            if (dataModel.isModified()) {
+                scrollData.onChange((int)dataModel.getFileHexLength(), dataModel.getLastAddress());
+                updateForms();
+            }
         });
     }
 
@@ -178,6 +194,8 @@ public class Controller {
             }
             hideProgressIndicator();
         });
+        buttonUndo.setDisable(false);
+        buttonRedo.setDisable(false);
     }
     private void bindScrollBars() {
         ScrollPane first = (ScrollPane) binaryAddressTable.getChildrenUnmodifiable().get(0);

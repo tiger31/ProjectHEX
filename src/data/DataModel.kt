@@ -9,9 +9,11 @@ class DataModel {
     private val byteData: MutableList<Byte> = mutableListOf()
     private var isModified: Boolean = false
     private var isFileOpened: Boolean = false
+    private val history = History()
 
     fun open(file: File): Boolean {
         if (isSameFile(file)) return false
+        history.clear()
         //Saving link to file
         this.file = file
         //Collect all bytes
@@ -23,7 +25,20 @@ class DataModel {
         return true
     }
 
-    fun change(from: ByteAddress, to: ByteAddress, value: ByteArray) {
+    fun changeData(from: ByteAddress, to: ByteAddress, value: ByteArray) {
+        history.add(HistoryRecord(from, from.plus(value.size - 1), byteData.subList(from.toInt(), to.toInt() + 1).toByteArray(), value, Edit.CHANGE))
+        change(from, to, value)
+    }
+    fun removeData(from: ByteAddress, to: ByteAddress) {
+        history.add(HistoryRecord(from, from, byteData.subList(from.toInt(), to.toInt() + 1).toByteArray(), ByteArray(0), Edit.REMOVE))
+        remove(from, to)
+    }
+    fun insertData(to: ByteAddress, value: ByteArray) {
+        history.add(HistoryRecord(to, to.plus(value.size - 1), ByteArray(0), value, Edit.INSERT))
+        insert(to, value)
+    }
+
+    private fun change(from: ByteAddress, to: ByteAddress, value: ByteArray) {
         val fromInt = from.toInt()
         for (i in fromInt..to.toInt()) {
             byteData.removeAt(fromInt)
@@ -32,19 +47,52 @@ class DataModel {
         recount()
         isModified = true
     }
-
-    fun remove(from: ByteAddress, to: ByteAddress) {
+    private fun remove(from: ByteAddress, to: ByteAddress) {
         val fromInt = from.toInt()
         for(i in fromInt..to.toInt())
             byteData.removeAt(fromInt)
         recount()
         isModified = true
     }
-
-    fun insert(to: ByteAddress, value: ByteArray) {
+    private fun insert(to: ByteAddress, value: ByteArray) {
         byteData.addAll(to.toInt(), value.toList())
         recount()
         isModified = true
+    }
+
+    fun undo() {
+        try {
+            val record = history.previous()
+            when (record.operation) {
+                Edit.CHANGE -> {
+                    change(record.begin, record.end, record.oldData)
+                }
+                Edit.REMOVE -> {
+                    insert(record.begin, record.oldData)
+                }
+                Edit.INSERT -> {
+                    remove(record.begin, record.end)
+                }
+                null -> {}
+            }
+        } catch (e: IllegalStateException) { }
+    }
+    fun redo() {
+        try {
+            val record = history.next()
+            when (record.operation) {
+                Edit.CHANGE -> {
+                    change(record.begin, record.begin.plus(record.oldData.size - 1), record.newData)
+                }
+                Edit.REMOVE -> {
+                    remove(record.begin, record.begin.plus(record.oldData.size - 1))
+                }
+                Edit.INSERT -> {
+                    insert(record.begin, record.newData)
+                }
+                null -> {}
+            }
+        } catch (e: IllegalStateException) { }
     }
 
     fun save() {
